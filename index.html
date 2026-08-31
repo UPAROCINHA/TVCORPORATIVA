@@ -367,14 +367,14 @@ input:checked + .toggle-slider::before { transform: translateX(22px); background
 const DEFAULT_NOTICES = [
   { badge:'ok',    label:'Prioridade',  text:'Idosos, gestantes e pessoas com deficiência têm atendimento preferencial.' },
   { badge:'warn',  label:'Prevenção',   text:'Use máscara se apresentar tosse, febre ou sintomas gripais.' },
-  { badge:'info',  label:'Resultados',  text:'Exames laboratoriais ficam prontos em até 24h úteis.' },
+  { badge:'info',  label:'Resultados',  text:'Exames laboratoriais ficam prontos em até 2h.' },
   { badge:'ok',    label:'UPA Rocinha', text:'Referência em saúde pública no Rio de Janeiro desde 2010.' },
 ];
 const DEFAULT_TICKER = [
   '🏥 Bem-vindo à Unidade de Pronto Atendimento da Rocinha',
-  '🩺 Fevereiro Roxo e Laranja — prevenção salva vidas',
+  '💛 Setembro Amarelo — mês de prevenção ao suicídio. Conversar salva vidas',
   '📊 Nossa equipe está trabalhando 24h por você',
-  '💉 Vacinação disponível — consulte o guichê de triagem',
+  '💉 Vacinação disponível — consulte sua Clínica da Família',
   '📞 Dúvidas? Fale com nossa equipe de acolhimento',
 ];
 const DEFAULT_WAIT = [
@@ -385,22 +385,49 @@ const DEFAULT_WAIT = [
   { label:'Azul',      sublabel:'Não urgente',   color:'#00d4ff', cls:'priority-azul',     time:90 },
 ];
 const DEFAULT_SLIDES = [
-  { type:'image', src:'papel.jpeg',     name:'papel.jpeg',     stored:true },
-  { type:'video', src:'videoupa+cpf.mp4',   name:'videoupa+cpf.mp4',   stored:true },
-  { type:'video', src:'resultado.mp4',  name:'resultado.mp4',  stored:true },
+  { type:'video', src:'uparocinha.mp4', name:'uparocinha.mp4', stored:true },
+  { type:'image', src:'PAPEL.jpeg',      name:'PAPEL.jpeg',      stored:true },
 ];
 const IMAGE_DURATION = 12000;
 
 /* ═══════════════════════════════════════════════════
    STORAGE
 ═══════════════════════════════════════════════════ */
+function atualizarMensagensSalvas() {
+  // Atualiza versões antigas que já estejam gravadas no navegador
+  try {
+    const notices = JSON.parse(localStorage.getItem('upa_notices') || 'null');
+    if (Array.isArray(notices)) {
+      notices.forEach(n => {
+        if (n && typeof n.text === 'string' && n.text.includes('Exames laboratoriais ficam prontos')) {
+          n.text = 'Exames laboratoriais ficam prontos em até 2h.';
+        }
+      });
+      localStorage.setItem('upa_notices', JSON.stringify(notices));
+    }
+
+    const ticker = JSON.parse(localStorage.getItem('upa_ticker') || 'null');
+    if (Array.isArray(ticker)) {
+      const novoTicker = ticker.map(t => {
+        if (typeof t !== 'string') return t;
+        if (t.includes('Fevereiro Roxo e Laranja')) return '💛 Setembro Amarelo — mês de prevenção ao suicídio. Conversar salva vidas';
+        if (t.includes('Vacinação disponível')) return '💉 Vacinação disponível — consulte sua Clínica da Família';
+        return t;
+      });
+      localStorage.setItem('upa_ticker', JSON.stringify(novoTicker));
+    }
+  } catch(e) {}
+}
+
+atualizarMensagensSalvas();
+
 function loadData() {
   try {
     return {
       notices:   JSON.parse(localStorage.getItem('upa_notices'))   || DEFAULT_NOTICES,
       ticker:    JSON.parse(localStorage.getItem('upa_ticker'))    || DEFAULT_TICKER,
       wait:      JSON.parse(localStorage.getItem('upa_wait'))      || DEFAULT_WAIT,
-      slides:    JSON.parse(localStorage.getItem('upa_slides'))    || DEFAULT_SLIDES,
+      slides:    DEFAULT_SLIDES,
       emergency: JSON.parse(localStorage.getItem('upa_emergency')) || { active: false, msg: '' },
     };
   } catch { return { notices:DEFAULT_NOTICES, ticker:DEFAULT_TICKER, wait:DEFAULT_WAIT, slides:DEFAULT_SLIDES, emergency:{active:false,msg:''} }; }
